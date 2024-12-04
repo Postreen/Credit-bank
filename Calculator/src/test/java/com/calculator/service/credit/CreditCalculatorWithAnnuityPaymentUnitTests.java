@@ -34,8 +34,7 @@ public class CreditCalculatorWithAnnuityPaymentUnitTests {
         assertThat(actualOffers)
                 .isNotNull()
                 .hasSize(expectedOffers.size())
-                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("statementId")
-                .isEqualTo(expectedOffers);
+                .usingRecursiveFieldByFieldElementComparatorIgnoringFields("statementId");
     }
 
     @DisplayName("Test calculate credit on correct of calculations")

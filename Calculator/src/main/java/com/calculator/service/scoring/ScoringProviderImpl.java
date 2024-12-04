@@ -1,5 +1,8 @@
 package com.calculator.service.scoring;
 
+import com.calculator.dto.utils.OfferCombination;
+import com.calculator.service.scoring.filter.soft.InsuranceSoftScoringFilter;
+import com.calculator.service.scoring.filter.soft.SalaryClientSoftScoringFilter;
 import lombok.RequiredArgsConstructor;
 import com.calculator.dto.request.ScoringDataDto;
 import com.calculator.dto.utils.RateAndInsuredServiceDto;
@@ -26,6 +29,13 @@ public class ScoringProviderImpl implements ScoringProvider {
     private final List<ScoringSoftFilter> softFilters;
     private final List<ScoringLoanFilter> loanFilters;
 
+    private static final List<OfferCombination> FILTER_COMBINATIONS = List.of(
+            new OfferCombination(false, false),
+            new OfferCombination(true, false),
+            new OfferCombination(false, true),
+            new OfferCombination(true, true)
+    );
+
     @Value("${service.rate}")
     private BigDecimal rate;
 
@@ -33,53 +43,32 @@ public class ScoringProviderImpl implements ScoringProvider {
     public List<SimpleScoringInfoDto> simpleScoring() {
 
         List<SimpleScoringInfoDto> offers = new ArrayList<>();
-        List<Map<String, Boolean>> allFilterCombinations = generateAllFilterCombinations();
 
-        for (Map<String, Boolean> filterStates : allFilterCombinations) {
-            List<RateAndInsuredServiceDto> filterResults = applyFilters(filterStates);
+        for (OfferCombination offerCombination : FILTER_COMBINATIONS) {
+
+            List<RateAndInsuredServiceDto> filterResults = applyFilters(offerCombination);
 
             RateAndInsuredServiceDto totalEffect = calculateTotalEffect(filterResults);
             RateAndInsuredServiceDto finalResult = combineEffects(totalEffect);
 
-            offers.add(new SimpleScoringInfoDto(filterStates, finalResult));
+            offers.add(new SimpleScoringInfoDto(
+                    offerCombination,
+                    finalResult
+            ));
         }
 
-        log.debug("Possible offers have been calculated: {}", offers);
+        log.debug("Possible offers, {}", offers);
 
         return offers;
     }
 
-    private List<Map<String, Boolean>> generateAllFilterCombinations() {
-        List<Map<String, Boolean>> combinations = new ArrayList<>();
-        int filterCount = loanFilters.size();
-        int totalCombinations = (int) Math.pow(2, filterCount);
-
-        for (int combinationIndex = 0; combinationIndex < totalCombinations; combinationIndex++) {
-            Map<String, Boolean> currentCombination = getStringBooleanMap(filterCount, combinationIndex);
-
-            combinations.add(currentCombination);
-        }
-
-        return combinations;
-    }
-
-    private Map<String, Boolean> getStringBooleanMap(int filterCount, int combinationIndex) {
-        Map<String, Boolean> currentCombination = new HashMap<>();
-
-        for (int i = 0; i < filterCount; i++) {
-            ScoringLoanFilter filter = loanFilters.get(i);
-            String filterName = filter.getClass().getSimpleName();
-
-            boolean isActive = (combinationIndex / (int) Math.pow(2, i)) % 2 == 1;
-            currentCombination.put(filterName, isActive);
-        }
-        return currentCombination;
-    }
-
-    private List<RateAndInsuredServiceDto> applyFilters(Map<String, Boolean> filterStates) {
+    private List<RateAndInsuredServiceDto> applyFilters(OfferCombination offerCombination) {
         List<RateAndInsuredServiceDto> filterResults = new ArrayList<>();
+
         for (ScoringLoanFilter filter : loanFilters) {
-            boolean isActive = filterStates.get(filter.getClass().getSimpleName());
+            boolean isActive = filter instanceof InsuranceSoftScoringFilter && offerCombination.isInsurance()
+                    || filter instanceof SalaryClientSoftScoringFilter && offerCombination.isSalaryClient();
+
             filterResults.add(filter.check(isActive));
 
             log.info("{}:change rate={}:insurance cost={}", filter.getClass().getSimpleName(),
@@ -125,6 +114,7 @@ public class ScoringProviderImpl implements ScoringProvider {
 
     @Override
     public void hardScoring(ScoringDataDto scoringDataDto) {
+
         hardFilters.stream()
                 .allMatch(filter -> filter.check(scoringDataDto));
     }

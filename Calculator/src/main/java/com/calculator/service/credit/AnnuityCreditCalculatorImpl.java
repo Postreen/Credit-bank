@@ -5,8 +5,6 @@ import com.calculator.dto.response.CreditDto;
 import com.calculator.dto.response.LoanOfferDto;
 import com.calculator.dto.response.PaymentScheduleElementDto;
 import com.calculator.dto.utils.SimpleScoringInfoDto;
-import com.calculator.service.scoring.filter.soft.InsuranceSoftScoringFilter;
-import com.calculator.service.scoring.filter.soft.SalaryClientSoftScoringFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,6 +31,7 @@ public class AnnuityCreditCalculatorImpl implements AnnuityCreditCalculator {
         log.debug("Amount={}, term={}. Possible rate and insurance cost={}", amount, term, listInfo);
 
         for (SimpleScoringInfoDto info : listInfo) {
+
             BigDecimal totalAmount = amount.add(info.RateAndInsuredServiceDto().insuredService());
             BigDecimal newRate = info.RateAndInsuredServiceDto().newRate();
             BigDecimal monthlyRate = getMonthlyRate(newRate);
@@ -40,8 +39,8 @@ public class AnnuityCreditCalculatorImpl implements AnnuityCreditCalculator {
             List<PaymentScheduleElementDto> schedule = getSchedule(monthlyPayment, monthlyRate, totalAmount, term);
             BigDecimal psk = getPsk(schedule);
 
-            boolean isSalaryClient = info.filters().get(SalaryClientSoftScoringFilter.class.getSimpleName());
-            boolean isInsuranceEnabled = info.filters().get(InsuranceSoftScoringFilter.class.getSimpleName());
+            boolean isSalaryClient = info.filters().isSalaryClient();
+            boolean isInsuranceEnabled = info.filters().isInsurance();
 
             loanOffers.add(new LoanOfferDto(
                     UUID.randomUUID(),

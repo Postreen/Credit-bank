@@ -10,6 +10,7 @@ import com.calculator.dto.request.ScoringDataDto;
 import com.calculator.dto.response.CreditDto;
 import com.calculator.dto.response.LoanOfferDto;
 import com.calculator.dto.response.PaymentScheduleElementDto;
+import com.calculator.dto.utils.OfferCombination;
 import com.calculator.dto.utils.RateAndInsuredServiceDto;
 import com.calculator.dto.utils.SimpleScoringInfoDto;
 
@@ -753,12 +754,12 @@ public class TestUtils {
         return new LoanOfferDto(
                 UUID.randomUUID(),
                 new BigDecimal("30000"),
-                new BigDecimal("33176.40"),
+                new BigDecimal("44006.40"),
                 12,
-                new BigDecimal("2764.70"),
-                new BigDecimal("19"),
-                false,
-                true
+                new BigDecimal("3667.20"),
+                new BigDecimal("18"),
+                true,
+                false
         );
     }
 
@@ -766,12 +767,12 @@ public class TestUtils {
         return new LoanOfferDto(
                 UUID.randomUUID(),
                 new BigDecimal("30000"),
-                new BigDecimal("44006.40"),
+                new BigDecimal("33176.40"),
                 12,
-                new BigDecimal("3667.20"),
-                new BigDecimal("18"),
-                true,
-                false
+                new BigDecimal("2764.70"),
+                new BigDecimal("19"),
+                false,
+                true
         );
     }
 
@@ -916,41 +917,36 @@ public class TestUtils {
 
     public static List<SimpleScoringInfoDto> getSimpleScoringInfoDto() {
         return List.of(
-                getSimpleScoringInfoDtoSalaryAndInsurance(),
-                getSimpleScoringInfoDtoInsurance(),
+                getSimpleScoringInfoDtoNotSalaryClientAndNotInsurance(),
                 getSimpleScoringInfoDtoSalaryClient(),
-                getSimpleScoringInfoDtoNotSalaryClientAndNotInsurance()
+                getSimpleScoringInfoDtoInsurance(),
+                getSimpleScoringInfoDtoSalaryAndInsurance()
         );
     }
-
     public static SimpleScoringInfoDto getSimpleScoringInfoDtoSalaryClient() {
         return new SimpleScoringInfoDto(
-                Map.of(nameSalaryFilter, true,
-                        nameInsuranceFilter, false),
-                new RateAndInsuredServiceDto(new BigDecimal("19"), BigDecimal.ZERO)
+                new OfferCombination(true, false),
+                new RateAndInsuredServiceDto(new BigDecimal("18"), new BigDecimal("10000"))
         );
     }
 
     public static SimpleScoringInfoDto getSimpleScoringInfoDtoNotSalaryClientAndNotInsurance() {
         return new SimpleScoringInfoDto(
-                Map.of(nameSalaryFilter, false,
-                        nameInsuranceFilter, false),
+                new OfferCombination(false, false),
                 new RateAndInsuredServiceDto(new BigDecimal("21"), BigDecimal.ZERO)
         );
     }
 
     public static SimpleScoringInfoDto getSimpleScoringInfoDtoInsurance() {
         return new SimpleScoringInfoDto(
-                Map.of(nameSalaryFilter, false,
-                        nameInsuranceFilter, true),
-                new RateAndInsuredServiceDto(new BigDecimal("18"), new BigDecimal("10000"))
+                new OfferCombination(false, true),
+                new RateAndInsuredServiceDto(new BigDecimal("19"), BigDecimal.ZERO)
         );
     }
 
     public static SimpleScoringInfoDto getSimpleScoringInfoDtoSalaryAndInsurance() {
         return new SimpleScoringInfoDto(
-                Map.of(nameSalaryFilter, true,
-                        nameInsuranceFilter, true),
+                new OfferCombination(true, true),
                 new RateAndInsuredServiceDto(new BigDecimal("16"), new BigDecimal("10000"))
         );
     }

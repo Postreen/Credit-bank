@@ -33,7 +33,7 @@ public class CalculatorServiceImpl implements CalculatorService {
                 .sorted((offer1, offer2) -> offer1.rate().subtract(offer2.rate()).intValue())
                 .collect(Collectors.toList());
 
-        log.debug("Loans have been calculated: {}", loanOffers);
+        log.debug("LoansOffers: {}", loanOffers);
 
         return loanOffers;
     }
@@ -41,12 +41,13 @@ public class CalculatorServiceImpl implements CalculatorService {
     @Override
     public CreditDto calculateCredit(ScoringDataDto scoringDataDto) {
 
-        log.debug("Formation of loan, scoringDataDto={}", scoringDataDto);
+        log.info("Calculation of loans");
+        log.debug("Loans, scoringDataDto, {}", scoringDataDto);
 
         RateAndInsuredServiceDto resultScoring = scoringProvider.fullScoring(scoringDataDto);
         CreditDto creditDto = creditCalculator.calculate(scoringDataDto, resultScoring.newRate(), resultScoring.insuredService());
 
-        log.debug("Loan has been formed: {}", creditDto);
+        log.debug("Loans, creditDto, {}", creditDto);
 
         return creditDto;
     }

@@ -38,15 +38,17 @@ public class CalculatorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = LoanOfferDto.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid format",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) }),
-            @ApiResponse(responseCode = "500", description = "Server's error",
+            @ApiResponse(responseCode = "422", description = "The request could not be completed",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) })})
     public List<LoanOfferDto> calculatePossibleLoanTerms(@RequestBody @Valid LoanStatementRequestDto loanStatementRequestDto) {
 
-        log.debug("Request: POST /offers; body={}", loanStatementRequestDto);
+        log.info("Request: POST /offers");
+        log.debug("Request,body={}", loanStatementRequestDto);
 
         List<LoanOfferDto> loanOfferDtos = calculatorService.calculateLoan(loanStatementRequestDto);
 
-        log.debug("Response: POST /offer;: body={}", loanOfferDtos);
+        log.debug("Response,body={}", loanOfferDtos);
+        log.info("Response: POST /offer");
 
         return loanOfferDtos;
     }
@@ -58,15 +60,17 @@ public class CalculatorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = CreditDto.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid format",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) }),
-            @ApiResponse(responseCode = "500", description = "Server's error",
+            @ApiResponse(responseCode = "422", description = "The request could not be completed",
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) })})
     public CreditDto fullCalculateLoanParametersAndScoring(@RequestBody @Valid ScoringDataDto scoringDataDto) {
 
-        log.debug("Request: POST /calc; body={}", scoringDataDto);
+        log.info("Request: POST /calc");
+        log.debug("Request, body={}", scoringDataDto);
 
         CreditDto creditDto = calculatorService.calculateCredit(scoringDataDto);
 
-        log.debug("Response: POST /calc; body={}", creditDto);
+        log.debug("Response, body={}", creditDto);
+        log.info("Response: POST /calc");
 
         return creditDto;
     }
