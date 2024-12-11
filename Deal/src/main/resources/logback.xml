@@ -22,7 +22,7 @@
         </encoder>
     </appender>
 
-    <logger name="calculator" level="DEBUG" additivity="false">
+    <logger name="deal" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

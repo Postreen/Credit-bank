@@ -1,4 +1,4 @@
-package com.calculator.dto.enums;
+package com.deal.utils.enums;
 
 public enum Gender {
     MALE,

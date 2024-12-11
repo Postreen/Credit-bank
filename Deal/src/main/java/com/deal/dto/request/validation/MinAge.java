@@ -1,4 +1,4 @@
-package com.calculator.dto.request.validation;
+package com.deal.dto.request.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

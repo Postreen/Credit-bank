@@ -1,9 +1,8 @@
-package com.calculator.dto.request;
+package com.deal.dto.request;
 
-
+import com.deal.dto.request.validation.MinAge;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
-import com.calculator.dto.request.validation.MinAge;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,3 +44,4 @@ public record LoanStatementRequestDto(
         @Pattern(regexp = "^\\d{6}$", message = "Must contain 6 digits")
         String passportNumber
 ) {}
+
