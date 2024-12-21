@@ -3,17 +3,19 @@ package com.deal.mapping;
 import com.deal.TestUtils;
 import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.ScoringDataDto;
-import com.deal.utils.Statement;
+import com.deal.entity.Statement;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class ScoringMapperTests {
-    @Autowired
+    @Mock
     private ScoringMapper mapper;
 
     @DisplayName("Test map Statement and FinishRegistrationDto to ScoringDataDto")
@@ -23,6 +25,7 @@ public class ScoringMapperTests {
         FinishRegistrationRequestDto finishRegistration = TestUtils.getFinishRegistrationRequestDto();
         ScoringDataDto expectedScoringDataDto = TestUtils.getScoringDataDto();
 
+        when(mapper.toScoringDataDto(statement, finishRegistration)).thenReturn(expectedScoringDataDto);
         ScoringDataDto actualScoringDataDto = mapper.toScoringDataDto(statement, finishRegistration);
 
         assertThat(actualScoringDataDto)

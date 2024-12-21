@@ -5,26 +5,26 @@ import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.request.ScoringDataDto;
 import com.deal.dto.response.CreditDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.entity.Client;
+import com.deal.entity.Credit;
+import com.deal.entity.Statement;
 import com.deal.exceptions.ScoringException;
 import com.deal.exceptions.StatementNotFoundException;
 import com.deal.mapping.ClientMapper;
-import com.deal.mapping.ClientMapperHelper;
 import com.deal.mapping.CreditMapper;
 import com.deal.mapping.ScoringMapper;
 import com.deal.repositories.ClientRepository;
 import com.deal.repositories.StatementRepository;
-import com.deal.service.client.CalculatorFeignClient;
-import com.deal.utils.Client;
-import com.deal.utils.Credit;
-import com.deal.utils.Statement;
+import com.deal.service.client.CalculatorRestClient;
 import com.deal.utils.enums.ApplicationStatus;
 import com.deal.utils.enums.ChangeType;
 import com.deal.utils.enums.CreditStatus;
-import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,15 +39,14 @@ public class DealServiceImpl implements DealService {
     private final StatementRepository statementRepository;
 
     private final ClientMapper clientMapper;
-    private final ClientMapperHelper clientMapperHelper;
     private final ScoringMapper scoringMapper;
     private final CreditMapper creditMapper;
 
-    private final CalculatorFeignClient calculatorClient;
+    private final CalculatorRestClient calculatorClient;
 
     @Override
     @Transactional
-    public List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto loanStatement) {
+    public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatement) {
 
         log.info("Received request to get loan offers for client.");
 
@@ -83,7 +82,7 @@ public class DealServiceImpl implements DealService {
     }
 
     private List<LoanOfferDto> generateLoanOffers(LoanStatementRequestDto loanStatement, Statement statement) {
-        List<LoanOfferDto> offers = calculatorClient.getLoanOffers(loanStatement);
+        List<LoanOfferDto> offers = calculatorClient.calculateLoanOffers(loanStatement);
         return offers.stream()
                 .map(oldOffer -> new LoanOfferDto(statement.getStatementId(), oldOffer))
                 .collect(Collectors.toList());
@@ -92,17 +91,16 @@ public class DealServiceImpl implements DealService {
     @Override
     public void selectLoanOffer(LoanOfferDto loanOffer) {
         UUID statementUUID = loanOffer.statementId();
-        Statement statement = findStatementById(statementUUID.toString());
+        Statement statement = findStatementById(statementUUID);
         statement.setAppliedOffer(loanOffer);
         statement.setStatus(ApplicationStatus.APPROVED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
-
         log.debug("Loan offer selected and statement ID {} updated to status APPROVED.", statementUUID);
     }
 
     @Override
     public void calculateCredit(String statementId, FinishRegistrationRequestDto finishRegistration) {
-        Statement statement = findStatementById(statementId);
+        Statement statement = findStatementById(UUID.fromString(statementId));
 
         if (statement.getAppliedOffer() == null) {
             log.error("No loan offer selected for statement ID {}.", statementId);
@@ -115,23 +113,23 @@ public class DealServiceImpl implements DealService {
         try {
             creditDto = calculatorClient.getCredit(scoringDataDto);
             statement.setStatus(ApplicationStatus.CC_APPROVED, ChangeType.AUTOMATIC);
-        } catch (FeignException e) {
-            if (e.status() == 422) {
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
                 statement.setStatus(ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
                 statementRepository.save(statement);
-                throw new ScoringException(e.contentUTF8());
+                throw new ScoringException(e.getResponseBodyAsString());
             }
             throw e;
         }
         log.debug("Mapping CreditDto={} to Credit entity for statement ID {}.", creditDto, statementId);
 
         updateCredit(statement, creditDto);
-        updateClient(statement.getClient(), finishRegistration);
+        updateClient(statement.getClient(), scoringDataDto);
         prepareDocuments(statement);
     }
 
-    private Statement findStatementById(String statementId) {
-        return statementRepository.findById(UUID.fromString(statementId))
+    private Statement findStatementById(UUID statementId) {
+        return statementRepository.findById(statementId)
                 .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
     }
 
@@ -147,10 +145,11 @@ public class DealServiceImpl implements DealService {
         }
     }
 
-    private void updateClient(Client client, FinishRegistrationRequestDto finishRegistration) {
+    private void updateClient(Client client, ScoringDataDto scoringDataDto) {
         log.debug("Updating client with ID {} using finish registration data.", client.getClientId());
 
-        clientMapperHelper.updateClientWithFinishRegistration(client, finishRegistration);
+        clientMapper.updateClientFromScoringData(client, scoringDataDto);
+        client.getEmployment().setEmploymentUUID(UUID.randomUUID());
         clientRepository.save(client);
     }
 

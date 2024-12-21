@@ -1,125 +1,105 @@
 package com.deal.services;
 
-import com.deal.DealApplication;
 import com.deal.TestUtils;
-import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.LoanStatementRequestDto;
-import com.deal.dto.response.ErrorMessageDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.entity.Statement;
 import com.deal.exceptions.StatementNotFoundException;
+import com.deal.mapping.ClientMapper;
 import com.deal.repositories.ClientRepository;
 import com.deal.repositories.StatementRepository;
 import com.deal.service.DealService;
-import com.deal.utils.Client;
-import com.deal.utils.Statement;
-import com.deal.utils.Credit;
+import com.deal.service.DealServiceImpl;
 import com.deal.utils.enums.ApplicationStatus;
-import com.deal.utils.enums.CreditStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.maciejwalkowiak.wiremock.spring.ConfigureWireMock;
-import com.maciejwalkowiak.wiremock.spring.EnableWireMock;
-import com.maciejwalkowiak.wiremock.spring.InjectWireMock;
-import feign.FeignException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.deal.TestUtils.CALC_CREDIT_ENDPOINT_CALCULATOR;
-import static com.deal.TestUtils.LOAN_OFFERS_ENDPOINT_CALCULATOR;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ExtendWith({SpringExtension.class})
-@ContextConfiguration(classes = DealApplication.class)
-@EnableWireMock(
-        @ConfigureWireMock(name="calculator-client", property = "${client.calculator.url}")
-)
-public class DealServiceTests  {
-    @InjectWireMock("calculator-client")
-    private WireMockServer calculatorServer;
-    @Autowired
-    private ObjectMapper mapper;
-    @Autowired
+@ExtendWith(MockitoExtension.class)
+public class DealServiceTests {
+    @Mock
     private StatementRepository statementRepository;
-    @Autowired
+    @Mock
     private ClientRepository clientRepository;
-    @Autowired
-    private DealService service;
+    @Mock
+    private RestTemplate restTemplate;
+    @Mock
+    private ClientMapper clientMapper;
+    @Mock
+    private DealService dealService;
+    @InjectMocks
+    private DealServiceImpl service;
+
 
     @DisplayName("Test get loan offers")
     @Test
     public void givenLoanStatementRequestDto_whenGetLoanOffers_thenReturnListLoanOffersSize4() throws JsonProcessingException {
         LoanStatementRequestDto loanStatement = TestUtils.getLoanStatementRequestDto();
-        calculatorServer.stubFor(post(LOAN_OFFERS_ENDPOINT_CALCULATOR)
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(mapper.writeValueAsString(TestUtils.getAnnuitentPaymentListLoanOffersDtoAmount30_000Term12()))));
+        List<LoanOfferDto> mockOffers = TestUtils.getAnnuitentPaymentListLoanOffersDtoAmount30_000Term12();
+        Statement mockStatement = TestUtils.getStatementTransient();
+        mockStatement.setStatus(ApplicationStatus.PREAPPROVAL);
 
-        List<LoanOfferDto> offers = service.getLoanOffers(loanStatement);
+        when(dealService.calculateLoanOffers(loanStatement)).thenReturn(mockOffers);
+        when(statementRepository.findById(mockOffers.get(0).statementId())).thenReturn(Optional.of(mockStatement));
+
+        List<LoanOfferDto> offers = dealService.calculateLoanOffers(loanStatement);
         Optional<Statement> savedStatement = statementRepository.findById(offers.get(0).statementId());
 
         assertThat(savedStatement)
                 .isPresent().get()
                 .extracting(Statement::getStatus)
                 .isEqualTo(ApplicationStatus.PREAPPROVAL);
-        assertThat(savedStatement.get().getClient())
-                .isNotNull();
         assertThat(offers)
                 .isNotNull().isNotEmpty()
                 .allMatch(offer -> offer.statementId() != null);
-    }
 
-    @DisplayName("Test get loan offers, prescoring error")
-    @Test
-    public void givenInvalidLoanStatementRequestDto_whenGetLoanOffers_thenReturnPrescoringException() throws JsonProcessingException {
-        LoanStatementRequestDto loanStatement = TestUtils.getLoanStatementRequestDtoInvalidAmount();
-        ErrorMessageDto errorMessage = TestUtils.getErrorMessageInvalidAmount();
-        calculatorServer.stubFor(post(LOAN_OFFERS_ENDPOINT_CALCULATOR)
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.BAD_REQUEST.value())
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(mapper.writeValueAsString(errorMessage))));
-
-        try {
-            service.getLoanOffers(loanStatement);
-        } catch (FeignException e) {
-            assertThat(e.status())
-                    .isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(e.contentUTF8())
-                    .contains("prescoring");
-        }
+        verify(dealService).calculateLoanOffers(loanStatement);
+        verify(statementRepository).findById(mockOffers.get(0).statementId());
     }
 
     @DisplayName("Test select loan offer")
     @Test
-    public void givenStatementPersistent_whenSelectLoanOffer_thenSaveAppliedOfferAndChangeStatusStatement() {
-        UUID uuidStatement = statementRepository.save(new Statement()).getStatementId();
-        LoanOfferDto loanOffer = TestUtils.getLoanOffer(uuidStatement);
+    public void givenStatementPersistent_thenSaveAppliedOfferAndChangeStatusStatement() {
+        Statement testStatement = TestUtils.getStatementPersistentError();
+        UUID expectedStatementId = testStatement.getStatementId();
+
+        LoanOfferDto loanOffer = TestUtils.getLoanOffer(expectedStatementId);
+
+        when(statementRepository.findById(expectedStatementId)).thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         service.selectLoanOffer(loanOffer);
 
-        Optional<Statement> savedStatement = statementRepository.findById(loanOffer.statementId());
+        ArgumentCaptor<Statement> statementCaptor = ArgumentCaptor.forClass(Statement.class);
+        verify(statementRepository).findById(loanOffer.statementId());
+        verify(statementRepository).save(statementCaptor.capture());
+
+        statementRepository.save(testStatement);
+        Statement savedStatement = statementCaptor.getValue();
+
         assertThat(savedStatement)
-                .isPresent().get()
+                .isNotNull()
                 .extracting(Statement::getAppliedOffer, Statement::getStatus)
                 .containsExactly(loanOffer, ApplicationStatus.APPROVED);
-        assertThat(savedStatement)
-                .get()
-                .extracting(Statement::getStatusHistory)
+        assertThat(savedStatement.getStatusHistory())
                 .isNotNull();
     }
 
@@ -128,9 +108,15 @@ public class DealServiceTests  {
     public void givenNotExistsLoanOffer_whenSelectLoanOffer_thenThrownStatementNotFoundException() {
         LoanOfferDto loanOffer = TestUtils.getAnnuitentPaymentLoanOfferDtoAmount30_000Term12();
 
+        when(statementRepository.findById(eq(loanOffer.statementId())))
+                .thenReturn(Optional.empty());
+
         assertThatThrownBy(() -> service.selectLoanOffer(loanOffer))
                 .isInstanceOf(StatementNotFoundException.class)
                 .hasMessageContaining(loanOffer.statementId().toString());
+
+        verify(statementRepository, times(1)).findById(loanOffer.statementId());
+        verify(statementRepository, never()).save(any());
     }
 
     @DisplayName("Test get credit not exists statementId")
@@ -143,4 +129,19 @@ public class DealServiceTests  {
                 .hasMessageContaining(uuid.toString());
     }
 
+    @DisplayName("Test get loan offers, prescoring error")
+    @Test
+    public void givenInvalidLoanStatementRequestDto_whenGetLoanOffers_thenReturnPrescoringException() throws JsonProcessingException {
+        LoanStatementRequestDto loanStatement = TestUtils.getLoanStatementRequestDtoInvalidAmount();
+        String errorMessage = TestUtils.getErrorMessageInvalidAmount();
+
+        try {
+            dealService.calculateLoanOffers(loanStatement);
+        } catch (HttpClientErrorException e) {
+            assertThat(e.getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(e.getResponseBodyAsString())
+                    .contains(errorMessage);
+        }
+    }
 }

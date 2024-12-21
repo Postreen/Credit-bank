@@ -1,4 +1,4 @@
-package com.deal.utils;
+package com.deal.entity;
 
 import com.deal.dto.response.PaymentScheduleElementDto;
 import com.deal.utils.enums.CreditStatus;
@@ -41,13 +41,13 @@ public class Credit {
     private BigDecimal psk;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name="payment_schedule")
+    @Column(name = "payment_schedule")
     private List<PaymentScheduleElementDto> paymentSchedule;
 
-    @Column(name="insurance_enabled")
+    @Column(name = "insurance_enabled")
     private Boolean insuranceEnabled;
 
-    @Column(name="salary_client")
+    @Column(name = "salary_client")
     private Boolean salaryClient;
 
     @Enumerated(EnumType.STRING)

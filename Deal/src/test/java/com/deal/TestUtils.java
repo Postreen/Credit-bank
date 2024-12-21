@@ -5,13 +5,13 @@ import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.request.ScoringDataDto;
 import com.deal.dto.response.CreditDto;
-import com.deal.dto.response.ErrorMessageDto;
 import com.deal.dto.response.LoanOfferDto;
 import com.deal.dto.response.PaymentScheduleElementDto;
-import com.deal.utils.Client;
-import com.deal.utils.Credit;
-import com.deal.utils.Statement;
+import com.deal.entity.Client;
+import com.deal.entity.Credit;
+import com.deal.entity.Statement;
 import com.deal.utils.enums.*;
+import com.deal.utils.json.Employment;
 import com.deal.utils.json.Passport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class TestUtils {
-    private final ObjectMapper mapper;
 
     public static final String LOAN_OFFERS_ENDPOINT_CALCULATOR = "/v1/calculator/offers";
     public static final String STATEMENT_ENDPOINT_DEAL = "/v1/deal/statement";
@@ -140,7 +139,7 @@ public class TestUtils {
     public static LoanOfferDto getAnnuitentPaymentLoanOfferDtoAmount30_000Term12() {
         return new LoanOfferDto(
                 UUID.randomUUID(),
-                new BigDecimal("30000"),
+                new BigDecimal("10000"),
                 new BigDecimal("43550.76"),
                 12,
                 new BigDecimal("3629.23"),
@@ -161,6 +160,36 @@ public class TestUtils {
                         .series("5555")
                         .number("555555")
                         .build())
+                .build();
+    }
+
+    public static Client getClient() {
+        return Client.builder()
+                .clientId(UUID.randomUUID())
+                .lastName("Chelicocowich")
+                .firstName("Alfred")
+                .middleName("Nikitiwich")
+                .birthdate(LocalDate.of(2000, 11, 21))
+                .email("Chelicocowich@gmail.com")
+                .gender(Gender.MALE)
+                .maritalStatus(MaritalStatus.SINGLE)
+                .dependentAmount(27)
+                .passport(Passport.builder()
+                        .passportUUID(UUID.randomUUID())
+                        .series("5555")
+                        .number("567890")
+                        .issueBranch("ГУ МВД РОССИИ")
+                        .issueDate(LocalDate.of(2015, 11, 21))
+                        .build())
+                .employment(Employment.builder()
+                        .inn("123456789012345678")
+                        .salary(BigDecimal.valueOf(50_000))
+                        .status(EmploymentStatus.SELF_EMPLOYED)
+                        .position(EmploymentPosition.TOP_MANAGER)
+                        .workExperienceCurrent(4)
+                        .workExperienceTotal(19)
+                        .build())
+                .accountNumber("79873022923")
                 .build();
     }
 
@@ -323,6 +352,19 @@ public class TestUtils {
                 .signDate(LocalDateTime.now())
                 .build();
     }
+
+    public static Statement getStatementPersistentError() {
+        UUID statementId = UUID.randomUUID();
+        return Statement.builder()
+                .statementId(statementId)
+                .appliedOffer(getLoanOffer(statementId))
+                .code("test")
+                .status(ApplicationStatus.APPROVED)
+                .creationDate(LocalDateTime.now())
+                .signDate(LocalDateTime.now())
+                .build();
+    }
+
     public static Statement getStatement() {
         UUID id = UUID.randomUUID();
         return Statement.builder()
@@ -371,8 +413,8 @@ public class TestUtils {
         );
     }
 
-    public static ErrorMessageDto getErrorMessageInvalidAmount() {
-        return new ErrorMessageDto("amount: prescoring error");
+    public static String getErrorMessageInvalidAmount() {
+        return new String("amount: prescoring error");
     }
 
     public static LoanOfferDto getLoanOffer(UUID uuidStatement) {

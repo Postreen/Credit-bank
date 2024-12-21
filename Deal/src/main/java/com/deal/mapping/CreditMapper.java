@@ -1,7 +1,7 @@
 package com.deal.mapping;
 
 import com.deal.dto.response.CreditDto;
-import com.deal.utils.Credit;
+import com.deal.entity.Credit;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

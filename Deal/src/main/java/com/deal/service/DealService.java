@@ -7,9 +7,9 @@ import com.deal.dto.response.LoanOfferDto;
 import java.util.List;
 
 public interface DealService {
-    List<LoanOfferDto> getLoanOffers(LoanStatementRequestDto loanStatement);
-
-    void calculateCredit(String statementId, FinishRegistrationRequestDto finishRegistration);
+    List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatement);
 
     void selectLoanOffer(LoanOfferDto loanOffer);
+
+    void calculateCredit(String statementId, FinishRegistrationRequestDto finishRegistration);
 }

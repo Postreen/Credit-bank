@@ -12,4 +12,5 @@ public record CreditDto(
         Boolean isInsuranceEnabled,
         Boolean isSalaryClient,
         List<PaymentScheduleElementDto> paymentSchedule
-) {}
+) {
+}

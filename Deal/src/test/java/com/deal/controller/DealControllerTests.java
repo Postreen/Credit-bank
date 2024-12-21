@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +39,7 @@ public class DealControllerTests {
         LoanStatementRequestDto testLoanOffer = TestUtils.getLoanStatementRequestDto();
         List<LoanOfferDto> expectedOffers = TestUtils.getAnnuitentPaymentListLoanOffersDtoAmount30_000Term12();
 
-        when(service.getLoanOffers(any(LoanStatementRequestDto.class))).thenReturn(expectedOffers);
+        when(service.calculateLoanOffers(any(LoanStatementRequestDto.class))).thenReturn(expectedOffers);
 
         MvcResult response = mockMvc.perform(post(TestUtils.STATEMENT_ENDPOINT_DEAL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -49,7 +47,8 @@ public class DealControllerTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        List<LoanOfferDto> actualOffers = mapper.readValue(response.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<LoanOfferDto> actualOffers = mapper.readValue(response.getResponse().getContentAsString(), new TypeReference<>() {
+        });
         assertThat(actualOffers)
                 .isNotNull()
                 .isNotEmpty()
@@ -68,6 +67,6 @@ public class DealControllerTests {
 
         assertThat(result.message().contains("amount: Should be more than 20_000"))
                 .isTrue();
-        verify(service, never()).getLoanOffers(any());
+        verify(service, never()).calculateLoanOffers(any());
     }
 }

@@ -4,7 +4,6 @@ import com.deal.dto.response.ErrorMessageDto;
 import com.deal.exceptions.PrescoringException;
 import com.deal.exceptions.ScoringException;
 import com.deal.exceptions.StatementNotFoundException;
-import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,13 +53,5 @@ public class ControllerExceptionHandler {
                 .body(new ErrorMessageDto(message));
     }
 
-    @ExceptionHandler(FeignException.class)
-    public ResponseEntity<String> handlerFeignException(FeignException e) {
-        String message = String.valueOf(e.contentUTF8());
-        log.error("Error's feign client = {}", e.contentUTF8());
-        return ResponseEntity
-                .status(e.status())
-                .body(message);
-    }
 }
 

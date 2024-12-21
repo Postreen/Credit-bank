@@ -25,4 +25,5 @@ public record ScoringDataDto(
         String accountNumber,
         Boolean isInsuranceEnabled,
         Boolean isSalaryClient
-) {}
+) {
+}

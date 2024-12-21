@@ -1,6 +1,4 @@
 spring:
-  main:
-    banner-mode: off
   application:
     name: Deal
   jpa:
@@ -8,12 +6,9 @@ spring:
       hibernate:
         format_sql: true
     hibernate:
-      ddl-auto: none
-  datasource:
-    username: postgres
-    password: postgres
-    url: jdbc:postgresql://localhost:5432/deal_db
-    driver-class-name: org.postgresql.Driver
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/master.xml
   cloud:
     openfeign:
       client:

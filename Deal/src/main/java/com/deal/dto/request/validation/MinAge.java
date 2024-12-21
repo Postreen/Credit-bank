@@ -13,7 +13,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MinAge {
     String message() default "Age must be at least {years} years";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
+
     int years();
 }

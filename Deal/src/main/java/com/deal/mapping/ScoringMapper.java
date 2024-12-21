@@ -2,7 +2,7 @@ package com.deal.mapping;
 
 import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.ScoringDataDto;
-import com.deal.utils.Statement;
+import com.deal.entity.Statement;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

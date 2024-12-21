@@ -1,9 +1,5 @@
 package com.deal.controller;
 
-//import com.deal.controller.annotations.CalculateCreditSwaggerDescription;
-//import com.deal.controller.annotations.CalculateLoanOfferSwaggerDescription;
-//import com.deal.controller.annotations.SelectLoanOfferSwaggerDescription;
-
 import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.response.ErrorMessageDto;
@@ -42,14 +38,14 @@ public class DealRestController {
 
         log.info("Request: POST /statement");
 
-        List<LoanOfferDto> loanOffers = service.getLoanOffers(loanStatement);
+        List<LoanOfferDto> loanOffers = service.calculateLoanOffers(loanStatement);
 
         log.info("Response: POST /statement");
 
         return loanOffers;
     }
 
-    @PostMapping("/offer/select")
+    @PostMapping("statement/offer")
     @Operation(summary = "calculation possible offers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Select offer"),

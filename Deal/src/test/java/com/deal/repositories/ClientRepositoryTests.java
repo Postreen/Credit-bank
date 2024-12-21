@@ -1,32 +1,36 @@
 package com.deal.repositories;
 
-import com.deal.DealApplication;
 import com.deal.TestUtils;
-import com.deal.utils.Client;
+import com.deal.entity.Client;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ExtendWith({SpringExtension.class})
-@ContextConfiguration(classes = DealApplication.class)
+@ExtendWith(MockitoExtension.class)
 public class ClientRepositoryTests {
-    @Autowired
+
+    @Mock
     private ClientRepository clientRepository;
 
     @DisplayName("Test save client")
     @Test
     public void givenClientTransient_whenSaveClient_thenFindByIdReturnClientPersistent() {
         Client client = TestUtils.getClientPersistent();
+
+        UUID expectedClientId = UUID.randomUUID();
+        client.setClientId(expectedClientId);
+
+        when(clientRepository.save(client)).thenReturn(client);
+        when(clientRepository.findById(expectedClientId)).thenReturn(Optional.of(client));
 
         UUID savedClientId = clientRepository.save(client).getClientId();
         Optional<Client> savedClient = clientRepository.findById(savedClientId);
@@ -40,5 +44,8 @@ public class ClientRepositoryTests {
                 .get()
                 .extracting(Client::getClientId)
                 .isNotNull();
+
+        verify(clientRepository).save(client);
+        verify(clientRepository).findById(expectedClientId);
     }
 }

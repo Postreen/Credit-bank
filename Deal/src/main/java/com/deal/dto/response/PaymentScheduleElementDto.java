@@ -10,4 +10,5 @@ public record PaymentScheduleElementDto(
         BigDecimal interestPayment,
         BigDecimal debtPayment,
         BigDecimal remainingDebt
-) {}
+) {
+}

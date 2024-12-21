@@ -1,14 +1,14 @@
 spring:
-  main:
-    banner-mode: off
   application:
     name: Deal
   jpa:
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
-    hibernate:
-      ddl-auto: none
+  liquibase:
+    change-log: classpath:db.changelog/master.xml
   datasource:
     username: postgres
     password: postgres
@@ -21,6 +21,10 @@ spring:
           default:
             logger-level: full
 
+client:
+  calculator:
+    url: http://localhost:8080
+
 server:
   port: 8081
 
@@ -29,10 +33,6 @@ springdoc:
     path: /deal/api-docs
   swagger-ui:
     path: /deal/api-docs-ui
-
-client:
-  calculator:
-    url: http://localhost:8080
 
 logging:
   level:

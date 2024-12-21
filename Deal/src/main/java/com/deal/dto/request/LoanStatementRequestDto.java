@@ -32,7 +32,7 @@ public record LoanStatementRequestDto(
         String email,
 
         @NotNull
-        @MinAge(years=18, message = "Age must be at least 18 years old")
+        @MinAge(years = 18, message = "Age must be at least 18 years old")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate birthdate,
 
@@ -43,5 +43,6 @@ public record LoanStatementRequestDto(
         @NotBlank
         @Pattern(regexp = "^\\d{6}$", message = "Must contain 6 digits")
         String passportNumber
-) {}
+) {
+}
 
