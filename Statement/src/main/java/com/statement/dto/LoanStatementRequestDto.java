@@ -1,14 +1,12 @@
-package com.deal.dto.request;
+package com.statement.dto;
 
-import com.deal.dto.request.validation.MinAge;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.statement.dto.validation.MinAge;
 import jakarta.validation.constraints.*;
-import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Validated
 public record LoanStatementRequestDto(
         @NotNull
         @Min(value = 20_000, message = "Should be more than 20_000")
@@ -33,7 +31,7 @@ public record LoanStatementRequestDto(
         @Pattern(regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$", message = "prescoring error")
         String email,
 
-        @NotNull
+        @NotNull(message = "Birthdate must not be null")
         @MinAge(years = 18, message = "Age must be at least 18 years old")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
         LocalDate birthdate,
