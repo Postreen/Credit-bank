@@ -17,23 +17,17 @@ public class CalculatorRestClient {
 
     private final RestClient restClient;
 
-    public CalculatorRestClient(@Value("${client.calculator.url}") String baseUrl) {
-        this.restClient = RestClient.builder()
-                .baseUrl(baseUrl)
-                .build();
+    public CalculatorRestClient(RestClient calculatorRestClient) {
+        this.restClient = calculatorRestClient;
     }
 
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatementRequestDto) {
-        try {
             return restClient.post()
                     .uri("/v1/calculator/offers")
                     .body(loanStatementRequestDto)
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<LoanOfferDto>>() {
                     });
-        } catch (HttpClientErrorException e) {
-            throw e;
-        }
     }
 
     public CreditDto getCredit(ScoringDataDto scoringDataDto) {

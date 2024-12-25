@@ -3,10 +3,12 @@ package com.deal.dto.request;
 import com.deal.dto.request.validation.MinAge;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Validated
 public record LoanStatementRequestDto(
         @NotNull
         @Min(value = 20_000, message = "Should be more than 20_000")
