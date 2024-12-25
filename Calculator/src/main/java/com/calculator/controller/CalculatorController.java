@@ -45,12 +45,12 @@ public class CalculatorController {
         log.info("Request: POST /offers");
         log.debug("Request,body={}", loanStatementRequestDto);
 
-        List<LoanOfferDto> loanOfferDtos = calculatorService.calculateLoan(loanStatementRequestDto);
+        List<LoanOfferDto> loanOfferDto = calculatorService.calculateLoan(loanStatementRequestDto);
 
-        log.debug("Response,body={}", loanOfferDtos);
+        log.debug("Response,body={}", loanOfferDto);
         log.info("Response: POST /offer");
 
-        return loanOfferDtos;
+        return loanOfferDto;
     }
 
     @PostMapping("/calc")

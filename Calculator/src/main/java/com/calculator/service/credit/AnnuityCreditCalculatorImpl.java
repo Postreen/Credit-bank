@@ -39,8 +39,8 @@ public class AnnuityCreditCalculatorImpl implements AnnuityCreditCalculator {
             List<PaymentScheduleElementDto> schedule = getSchedule(monthlyPayment, monthlyRate, totalAmount, term);
             BigDecimal psk = getPsk(schedule);
 
-            boolean isSalaryClient = info.filters().isSalaryClient();
-            boolean isInsuranceEnabled = info.filters().isInsurance();
+            boolean isSalaryClient = info.offerCombination().isSalaryClient();
+            boolean isInsuranceEnabled = info.offerCombination().isInsurance();
 
             loanOffers.add(new LoanOfferDto(
                     UUID.randomUUID(),

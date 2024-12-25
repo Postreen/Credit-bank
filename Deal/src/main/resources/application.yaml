@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: Deal
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  datasource:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/deal_db
+    driver-class-name: org.postgresql.Driver
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            logger-level: full
+
+client:
+  calculator:
+    url: http://localhost:8080
+
+server:
+  port: 8081
+
+springdoc:
+  api-docs:
+    path: /deal/api-docs
+  swagger-ui:
+    path: /deal/api-docs-ui
+
+logging:
+  level:
+    root: info
