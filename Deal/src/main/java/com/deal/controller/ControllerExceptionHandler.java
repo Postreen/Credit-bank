@@ -29,7 +29,7 @@ public class ControllerExceptionHandler {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-        log.error("Validation error DTO, message: {}", message);
+        log.error("Error = {}", message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorMessageDto(message));
@@ -46,11 +46,12 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(ScoringException.class)
     public ResponseEntity<ErrorMessageDto> handlerScoringException(ScoringException e) {
         String message = e.getMessage();
-        log.error("ScoringException occurred: {}", message);
+        log.debug("ScoringException occurred: {}", message);
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(new ErrorMessageDto(message));
     }
+
 }
 
