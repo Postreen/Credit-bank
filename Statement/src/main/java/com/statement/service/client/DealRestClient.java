@@ -4,7 +4,6 @@ import com.statement.dto.LoanOfferDto;
 import com.statement.dto.LoanStatementRequestDto;
 import com.statement.exceptions.StatementNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -18,10 +17,8 @@ public class DealRestClient {
 
     private final RestClient restClient;
 
-    public DealRestClient(@Value("${client.deal.url}") String baseUrl) {
-        this.restClient = RestClient.builder()
-                .baseUrl(baseUrl)
-                .build();
+    public DealRestClient(RestClient dealRestClient) {
+        this.restClient = dealRestClient;
     }
 
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatementRequestDto) {
