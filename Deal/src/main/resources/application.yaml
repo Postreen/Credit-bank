@@ -1,4 +1,9 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   application:
     name: Deal
   jpa:
@@ -20,6 +25,17 @@ spring:
         config:
           default:
             logger-level: full
+
+kafka:
+  init:
+    topics: true
+  topics:
+    finishRegistration: finish-registration
+    createDocuments: create-documents
+    sendDocuments: send-documents
+    sendSes: send-ses
+    creditIssued: credit-issued
+    statementDenied: statement-denied
 
 client:
   calculator:

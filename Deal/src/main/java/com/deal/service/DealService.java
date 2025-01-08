@@ -5,6 +5,7 @@ import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.response.LoanOfferDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DealService {
     List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatement);
@@ -12,4 +13,11 @@ public interface DealService {
     void selectLoanOffer(LoanOfferDto loanOffer);
 
     void calculateCredit(String statementId, FinishRegistrationRequestDto finishRegistration);
+
+    void prepareDocuments(UUID statementId);
+
+    void createSignCodeDocuments(UUID statementId);
+
+    void signCodeDocument(UUID statementId, String sesCode);
+
 }

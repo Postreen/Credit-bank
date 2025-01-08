@@ -8,8 +8,11 @@ import com.deal.dto.response.LoanOfferDto;
 import com.deal.entity.Client;
 import com.deal.entity.Credit;
 import com.deal.entity.Statement;
+import com.deal.exceptions.InvalidSesCode;
 import com.deal.exceptions.ScoringException;
 import com.deal.exceptions.StatementNotFoundException;
+import com.deal.kafka.dto.enums.Theme;
+import com.deal.kafka.producer.DealProducer;
 import com.deal.mapping.ClientMapper;
 import com.deal.mapping.CreditMapper;
 import com.deal.mapping.ScoringMapper;
@@ -43,6 +46,7 @@ public class DealServiceImpl implements DealService {
     private final CreditMapper creditMapper;
 
     private final CalculatorRestClient calculatorClient;
+    private final DealProducer dealProducer;
 
     @Override
     @Transactional
@@ -95,6 +99,10 @@ public class DealServiceImpl implements DealService {
         statement.setAppliedOffer(loanOffer);
         statement.setStatus(ApplicationStatus.APPROVED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
+
+        dealProducer.sendFinishRegistrationRequestNotification(statement.getClient().getEmail(),
+                Theme.FINISH_REGISTRATION, statement.getStatementId());
+
         log.debug("Loan offer selected and statement ID {} updated to status APPROVED.", statementUUID);
     }
 
@@ -117,6 +125,10 @@ public class DealServiceImpl implements DealService {
             if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
                 statement.setStatus(ApplicationStatus.CC_DENIED, ChangeType.AUTOMATIC);
                 statementRepository.save(statement);
+
+                dealProducer.sendScoringException(statement.getClient().getEmail(),
+                        Theme.CC_DENIED, statement.getStatementId());
+
                 throw new ScoringException(e.getResponseBodyAsString());
             }
             throw e;
@@ -125,7 +137,11 @@ public class DealServiceImpl implements DealService {
 
         updateCredit(statement, creditDto);
         updateClient(statement.getClient(), scoringDataDto);
-        prepareDocuments(statement);
+
+        dealProducer.sendCreateDocumentsNotification(statement.getClient().getEmail(),
+                Theme.CC_APPROVED, statement.getStatementId());
+        dealProducer.sendCreateDocumentsNotification(statement.getClient().getEmail(),
+                Theme.CREATED_DOCUMENTS, statement.getStatementId());
     }
 
     private Statement findStatementById(UUID statementId) {
@@ -153,12 +169,19 @@ public class DealServiceImpl implements DealService {
         clientRepository.save(client);
     }
 
-    public void prepareDocuments(Statement statement) {
+    public void prepareDocuments(UUID statementId) {
+        Statement statement = findStatementById(statementId);
+
         log.debug("Preparing documents for statement ID {}.", statement.getStatementId());
 
         statement.setStatus(ApplicationStatus.PREPARE_DOCUMENTS, ChangeType.MANUAL);
         statementRepository.save(statement);
         updateStatus(statement);
+
+        CreditDto creditDto = creditMapper.toCreditDto(statement.getCredit());
+
+        dealProducer.sendPrepareDocumentsNotification(statement.getClient().getEmail(),
+                Theme.PREPARE_DOCUMENTS, statementId, creditDto);
     }
 
     private void updateStatus(Statement statement) {
@@ -166,21 +189,31 @@ public class DealServiceImpl implements DealService {
 
         statement.setStatus(ApplicationStatus.DOCUMENTS_CREATED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
-        createSignCodeDocuments(statement);
     }
 
-    private void createSignCodeDocuments(Statement statement) {
+    public void createSignCodeDocuments(UUID statementId) {
+        Statement statement = findStatementById(statementId);
         UUID sesCode = UUID.randomUUID();
         statement.setCode(sesCode.toString());
         statementRepository.save(statement);
-        signDocuments(statement);
+
+        dealProducer.sendSignCodeDocumentsNotification(statement.getClient().getEmail(),
+                Theme.SIGN_DOCUMENTS, statementId, sesCode);
 
         log.debug("Creating sesCode {}, for documents of statement ID {}.", sesCode, statement.getStatementId());
     }
 
-    private void signDocuments(Statement statement) {
+    public void signCodeDocument(UUID statementId, String sesCode) {
+        Statement statement = findStatementById(statementId);
+        if(!sesCode.equals(statement.getCode())) {
+            throw new InvalidSesCode("Invalid ses code="+sesCode);
+        }
         statement.setSignDate(LocalDateTime.now());
         statement.setStatus(ApplicationStatus.DOCUMENT_SIGNED, ChangeType.AUTOMATIC);
+
+        dealProducer.sendSuccessSignDocumentsNotification(statement.getClient().getEmail(),
+                Theme.SIGN_DOCUMENTS, statementId);
+
         statement.setStatus(ApplicationStatus.CREDIT_ISSUED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
 

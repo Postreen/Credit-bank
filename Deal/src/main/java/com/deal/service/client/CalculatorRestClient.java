@@ -4,10 +4,8 @@ import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.request.ScoringDataDto;
 import com.deal.dto.response.CreditDto;
 import com.deal.dto.response.LoanOfferDto;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
