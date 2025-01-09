@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Statement
+
+server:
+  port: 8082
+
+client:
+  deal:
+    url: http://localhost:8081
+
+springdoc:
+  swagger-ui:
+    path: /statement/api-docs-ui
+  api-docs:
+    path: /statement/api-docs
+

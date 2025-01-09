@@ -34,6 +34,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
+    implementation 'org.liquibase:liquibase-core'
+
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
@@ -53,6 +55,9 @@ dependencies {
     testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
     testImplementation "com.maciejwalkowiak.spring:wiremock-spring-boot:${wiremockVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "ch.qos.logback:logback-core:${logbackVersion}"
 }
 
 dependencyManagement {

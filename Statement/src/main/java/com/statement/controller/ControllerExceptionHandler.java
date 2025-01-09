@@ -1,9 +1,8 @@
-package com.deal.controller;
+package com.statement.controller;
 
-import com.deal.dto.response.ErrorMessageDto;
-import com.deal.exceptions.PrescoringException;
-import com.deal.exceptions.ScoringException;
-import com.deal.exceptions.StatementNotFoundException;
+import com.statement.dto.ErrorMessageDto;
+import com.statement.exceptions.PrescoringException;
+import com.statement.exceptions.StatementNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +28,7 @@ public class ControllerExceptionHandler {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
-        log.error("Error = {}", message);
+        log.error("Validation error DTO, message: {}", message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorMessageDto(message));
@@ -42,16 +41,4 @@ public class ControllerExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorMessageDto(e.getMessage()));
     }
-
-    @ExceptionHandler(ScoringException.class)
-    public ResponseEntity<ErrorMessageDto> handlerScoringException(ScoringException e) {
-        String message = e.getMessage();
-        log.debug("ScoringException occurred: {}", message);
-
-        return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ErrorMessageDto(message));
-    }
-
 }
-
