@@ -17,13 +17,13 @@ public class DossierListener {
     private final DossierService service;
 
     @KafkaListener(groupId = "${spring.kafka.consumer.group-id}", topics = "${kafka.topics.finishRegistration}")
-    public void handleFinishRegistration(EmailMessage emailMessage) {
+    public void handleFinishRegistration(EmailMessage emailMessage) throws MessagingException {
         log.info("Received message from topic finishRegistration: {}", emailMessage);
         service.sendMessageEmail(emailMessage);
     }
 
     @KafkaListener(groupId = "${spring.kafka.consumer.group-id}", topics = "${kafka.topics.createDocuments}")
-    public void handleCreateDocuments(EmailMessage emailMessage) {
+    public void handleCreateDocuments(EmailMessage emailMessage) throws MessagingException {
         log.info("Received message from topic createDocuments: {}", emailMessage);
         service.sendMessageEmail(emailMessage);
     }
@@ -41,13 +41,13 @@ public class DossierListener {
     }
 
     @KafkaListener(groupId = "${spring.kafka.consumer.group-id}", topics = "${kafka.topics.creditIssued}")
-    public void handleCreditIssued(EmailMessage emailMessage) {
+    public void handleCreditIssued(EmailMessage emailMessage) throws MessagingException {
         log.info("Received message from topic creditIssued: {}", emailMessage);
         service.sendMessageEmail(emailMessage);
     }
 
     @KafkaListener(groupId = "${spring.kafka.consumer.group-id}", topics = "${kafka.topics.statementDenied}")
-    public void handleStatementDenied(EmailMessage emailMessage) {
+    public void handleStatementDenied(EmailMessage emailMessage) throws MessagingException {
         log.info("Received message from topic statementDenied: {}", emailMessage);
         service.sendMessageEmail(emailMessage);
     }

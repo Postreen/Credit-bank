@@ -1,4 +1,4 @@
-package com.deal.kafka.config;
+package com.deal.config;
 
 import lombok.Getter;
 import lombok.Setter;

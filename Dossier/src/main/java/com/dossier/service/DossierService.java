@@ -7,7 +7,7 @@ import jakarta.mail.MessagingException;
 
 
 public interface DossierService {
-    void sendMessageEmail(EmailMessage emailMessage);
+    void sendMessageEmail(EmailMessage emailMessage) throws MessagingException;
 
     void sendMessageEmail(EmailMessageWithCreditDto emailMessage) throws MessagingException;
 

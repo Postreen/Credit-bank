@@ -1,4 +1,4 @@
-package com.dossier.kafka.config;
+package com.dossier.config;
 
 import lombok.Getter;
 import lombok.Setter;

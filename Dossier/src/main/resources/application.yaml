@@ -39,3 +39,4 @@ kafka:
 client:
   deal:
     url: http://localhost:8081
+

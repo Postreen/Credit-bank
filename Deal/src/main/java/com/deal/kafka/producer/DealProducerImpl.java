@@ -1,5 +1,6 @@
 package com.deal.kafka.producer;
 
+import com.deal.config.KafkaTopics;
 import com.deal.dto.response.CreditDto;
 import com.deal.kafka.dto.EmailMessage;
 import com.deal.kafka.dto.EmailMessageWithCreditDto;
@@ -21,23 +22,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DealProducerImpl implements DealProducer {
     private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
-
-    @Value("${kafka.topics.finishRegistration}")
-    private String finishRegistration;
-    @Value("${kafka.topics.createDocuments}")
-    private String createDocuments;
-    @Value("${kafka.topics.sendDocuments}")
-    private String sendDocuments;
-    @Value("${kafka.topics.sendSes}")
-    private String sendSesCode;
-    @Value("${kafka.topics.creditIssued}")
-    private String creditIssued;
-    @Value("${kafka.topics.statementDenied}")
-    private String statementDenied;
+    private final KafkaTopics kafkaTopics;
 
     @Override
     public void sendFinishRegistrationRequestNotification(String email, Theme theme, UUID statementId) {
-        sendNotification(email, finishRegistration, theme, statementId);
+        sendNotification(email, kafkaTopics.getFinishRegistration(), theme, statementId);
     }
 
     private void sendNotification(String email, String topic, Theme theme, UUID statementId) {
@@ -52,7 +41,7 @@ public class DealProducerImpl implements DealProducer {
     public void sendPrepareDocumentsNotification(String email, Theme theme, UUID statementId, CreditDto creditDto) {
         Message<EmailMessageWithCreditDto> message = MessageBuilder
                 .withPayload(new EmailMessageWithCreditDto(email, theme, statementId, creditDto))
-                .setHeader(KafkaHeaders.TOPIC, sendDocuments)
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopics.getSendDocuments())
                 .build();
         kafkaTemplate.send(message);
     }
@@ -61,23 +50,23 @@ public class DealProducerImpl implements DealProducer {
     public void sendSignCodeDocumentsNotification(String email, Theme theme, UUID statementId, UUID sesCode) {
         Message<EmailMessageWithSesCode> message = MessageBuilder
                 .withPayload(new EmailMessageWithSesCode(email, theme, statementId, sesCode))
-                .setHeader(KafkaHeaders.TOPIC, sendSesCode)
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopics.getSendSes())
                 .build();
         kafkaTemplate.send(message);
     }
 
     @Override
     public void sendSuccessSignDocumentsNotification(String email, Theme theme, UUID statementId) {
-        sendNotification(email, creditIssued, theme, statementId);
+        sendNotification(email, kafkaTopics.getCreditIssued(), theme, statementId);
     }
 
     @Override
     public void sendScoringException(String email, Theme theme, UUID statementId) {
-        sendNotification(email, statementDenied, theme, statementId);
+        sendNotification(email, kafkaTopics.getStatementDenied(), theme, statementId);
     }
 
     @Override
     public void sendCreateDocumentsNotification(String email, Theme theme, UUID statementId) {
-        sendNotification(email, createDocuments, theme, statementId);
+        sendNotification(email, kafkaTopics.getCreateDocuments(), theme, statementId);
     }
 }

@@ -1,4 +1,4 @@
-package com.dossier.kafka.config;
+package com.deal.config;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -9,7 +9,7 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnExpression("${kafka.init.topics}==true")
+@ConditionalOnExpression("#{${kafka.init.topics}==true}")
 public class KafkaConfig {
     private final KafkaTopics topics;
 
@@ -55,4 +55,3 @@ public class KafkaConfig {
                 .build();
     }
 }
-

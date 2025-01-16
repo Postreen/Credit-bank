@@ -93,5 +93,4 @@ public class DealRestController {
                                  @RequestParam String sesCode) {
         service.signCodeDocument(statementId, sesCode);
     }
-
 }

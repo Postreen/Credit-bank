@@ -211,11 +211,11 @@ public class DealServiceImpl implements DealService {
         statement.setSignDate(LocalDateTime.now());
         statement.setStatus(ApplicationStatus.DOCUMENT_SIGNED, ChangeType.AUTOMATIC);
 
-        dealProducer.sendSuccessSignDocumentsNotification(statement.getClient().getEmail(),
-                Theme.SIGN_DOCUMENTS, statementId);
-
         statement.setStatus(ApplicationStatus.CREDIT_ISSUED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
+
+        dealProducer.sendSuccessSignDocumentsNotification(statement.getClient().getEmail(),
+                Theme.SIGN_DOCUMENTS, statementId);
 
         log.info("Documents for statement ID {} have been signed and credit issued.", statement.getStatementId());
     }
