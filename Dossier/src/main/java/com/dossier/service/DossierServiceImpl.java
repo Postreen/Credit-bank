@@ -9,6 +9,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -28,8 +29,15 @@ public class DossierServiceImpl implements DossierService {
     private final JavaMailSender sender;
     private final DocumentGenerator documentGenerator;
 
-    private static final String CREATED_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentSend.html";
-    private static final String SEND_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentCode.html";
+    @Value("${client.deal.send}")
+    private String sendDocumentUrlTemplate;
+    @Value("${client.deal.sign}")
+    private String signDocumentUrlTemplate;
+    @Value("${client.deal.code}")
+    private String codeDocumentUrlTemplate;
+
+    private static final String SEND_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentSend.html";
+    private static final String CODE_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentCode.html";
     private static final String SIGN_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentSign.html";
 
     @Override
@@ -69,7 +77,7 @@ public class DossierServiceImpl implements DossierService {
             helper.setTo(emailMessage.address());
             helper.setSubject("Кредитные уведомления");
             helper.addAttachment("documents.pdf", dataSource);
-            helper.setText(generateSendDocumentEmail(emailMessage.statementId()), true);
+            helper.setText(generateSignDocumentEmail(emailMessage.statementId()), true);
             sender.send(message);
             log.info("Email with credit documents sent successfully to address: {}", emailMessage.address());
         } catch (MessagingException e) {
@@ -88,7 +96,7 @@ public class DossierServiceImpl implements DossierService {
 
             helper.setTo(emailMessage.address());
             helper.setSubject("Подтверждение SES-кода");
-            String emailContent = generateSignDocumentEmail(emailMessage.statementId(), emailMessage.sesCodeConfirm());
+            String emailContent = generateCodeDocumentEmail(emailMessage.statementId(), emailMessage.sesCodeConfirm());
             helper.setText(emailContent, true);
 
             sender.send(mimeMessage);
@@ -105,38 +113,49 @@ public class DossierServiceImpl implements DossierService {
             case FINISH_REGISTRATION -> "Завершите регистрацию для получения кредита";
             case CC_DENIED -> "В кредите отказано";
             case CC_APPROVED -> "Кредит одобрен";
-            case CREATED_DOCUMENTS -> generateDocumentEmail(emailMessage.statementId());
+            case CREATED_DOCUMENTS -> generateSendDocumentEmail(emailMessage.statementId());
             case PREPARE_DOCUMENTS -> "Документы формируются";
             case SIGN_DOCUMENTS -> "Поздравляем! Документы подписаны, можете пользоваться кредитом";
             default -> "Уведомление о кредите";
         };
     }
 
-    private String generateDocumentEmail(UUID statementId) {
-        try {
-            Path path = Paths.get(CREATED_DOCUMENTS_PATH);
-            String template = Files.readString(path);
-            return template.formatted(statementId);
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при чтении HTML-шаблона", e);
-        }
-    }
-
     private String generateSendDocumentEmail(UUID statementId) {
         try {
             Path path = Paths.get(SEND_DOCUMENTS_PATH);
             String template = Files.readString(path);
-            return template.formatted(statementId);
+
+            String sendDocumentUrl = String.format(sendDocumentUrlTemplate, statementId);
+
+            return template.formatted(sendDocumentUrl);
         } catch (IOException e) {
+            log.error("Error reading or processing HTML template", e);
             throw new RuntimeException("Ошибка при чтении HTML-шаблона", e);
         }
     }
 
-    private String generateSignDocumentEmail(UUID statementId, UUID sesCode) {
+    private String generateSignDocumentEmail(UUID statementId) {
         try {
-            String template = Files.readString(Path.of(SIGN_DOCUMENTS_PATH));
+            Path path = Paths.get(SIGN_DOCUMENTS_PATH);
+            String template = Files.readString(path);
+
+            String sendDocumentUrl = String.format(signDocumentUrlTemplate, statementId);
+
+            return template.formatted(sendDocumentUrl);
+        } catch (IOException e) {
+            log.error("Error reading or processing HTML template", e);
+            throw new RuntimeException("Ошибка при чтении HTML-шаблона", e);
+        }
+    }
+
+    private String generateCodeDocumentEmail(UUID statementId, UUID sesCode) {
+        try {
+            String template = Files.readString(Path.of(CODE_DOCUMENTS_PATH));
+
+            String actionUrl = String.format(codeDocumentUrlTemplate, statementId);
+
             return template
-                    .replace("StatementId", statementId.toString())
+                    .replace("%s", actionUrl)
                     .replace("SesCode", sesCode.toString());
         } catch (IOException e) {
             log.error("Error reading or processing HTML template", e);

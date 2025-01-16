@@ -39,4 +39,7 @@ kafka:
 client:
   deal:
     url: http://localhost:8081
+    sign: http://localhost:8081/v1/deal/document/%s/sign
+    send: http://localhost:8081/v1/deal/document/%s/send
+    code: http://localhost:8081/v1/deal/document/%s/code
 
