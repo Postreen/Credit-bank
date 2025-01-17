@@ -19,6 +19,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Validated
@@ -29,7 +30,7 @@ public class DealRestController {
     private final DealService service;
 
     @PostMapping("/statement")
-    @Operation(summary = "calculation possible offers")
+    @Operation(summary = "Calculation possible offers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Calculate and save credit"),
             @ApiResponse(responseCode = "400", description = "Invalid format",
@@ -45,8 +46,8 @@ public class DealRestController {
         return loanOffers;
     }
 
-    @PostMapping("statement/offer")
-    @Operation(summary = "calculation possible offers")
+    @PostMapping("offer/select")
+    @Operation(summary = "Select one of the offers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Select offer"),
             @ApiResponse(responseCode = "404", description = "Statement not found",
@@ -59,7 +60,7 @@ public class DealRestController {
     }
 
     @PostMapping("/calculate/{statementId}")
-    @Operation(summary = "calculation possible offers")
+    @Operation(summary = "Completion of registration + full credit calculation")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Calculate and save credit"),
             @ApiResponse(responseCode = "404", description = "Statement not found",
@@ -74,4 +75,22 @@ public class DealRestController {
         service.calculateCredit(statementId, finishRegistration);
     }
 
+    @PostMapping("/document/{statementId}/send")
+    @Operation(summary = "Request to send documents")
+    public void prepareDocuments(@PathVariable UUID statementId) {
+        service.prepareDocuments(statementId);
+    }
+
+    @PostMapping("/document/{statementId}/sign")
+    @Operation(summary = "Request to sign documents")
+    public void createSignCodeDocuments(@PathVariable UUID statementId) {
+        service.createSignCodeDocuments(statementId);
+    }
+
+    @PostMapping("/document/{statementId}/code")
+    @Operation(summary = "Signing documents")
+    public void signCodeDocument(@PathVariable UUID statementId,
+                                 @RequestParam String sesCode) {
+        service.signCodeDocument(statementId, sesCode);
+    }
 }

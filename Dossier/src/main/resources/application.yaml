@@ -1,0 +1,45 @@
+server:
+  port: 8083
+
+spring:
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: ${MAIL_PROTOCOL}
+    properties:
+      "mail.smtp.auth": true
+      "mail.smtp.starttls.enable": true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      group-id: deal-notifications
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+        spring.json.type.mapping: com.deal.kafka.dto.EmailMessage:com.dossier.kafka.dto.EmailMessage,
+          com.deal.kafka.dto.EmailMessageWithSesCode:com.dossier.kafka.dto.EmailMessageWithSesCode,
+          com.deal.kafka.dto.EmailMessageWithCreditDto:com.dossier.kafka.dto.EmailMessageWithCreditDto,
+          com.deal.dto.response.CreditDto:com.dossier.kafka.dto.CreditDto,
+          com.deal.dto.response.PaymentScheduleElementDto:com.dossier.kafka.dto.PaymentScheduleElementDto
+kafka:
+  init:
+    topics: true
+  topics:
+    finishRegistration: finish-registration
+    createDocuments: create-documents
+    sendDocuments: send-documents
+    sendSes: send-ses
+    creditIssued: credit-issued
+    statementDenied: statement-denied
+
+client:
+  deal:
+    url: http://localhost:8081
+    sign: http://localhost:8081/v1/deal/document/%s/sign
+    send: http://localhost:8081/v1/deal/document/%s/send
+    code: http://localhost:8081/v1/deal/document/%s/code
+

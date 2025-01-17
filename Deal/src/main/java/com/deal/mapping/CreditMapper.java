@@ -11,4 +11,7 @@ public interface CreditMapper {
     @Mapping(target = "salaryClient", source = "isSalaryClient")
     Credit toCredit(CreditDto creditDto);
 
+    @Mapping(target = "isInsuranceEnabled", source = "insuranceEnabled")
+    @Mapping(target = "isSalaryClient", source = "salaryClient")
+    CreditDto toCreditDto(Credit credit);
 }
