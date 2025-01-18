@@ -1,4 +1,4 @@
-package com.deal.utils.json;
+package com.deal.entity.json;
 
 import lombok.*;
 

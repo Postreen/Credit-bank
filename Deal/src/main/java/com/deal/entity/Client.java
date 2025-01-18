@@ -2,8 +2,8 @@ package com.deal.entity;
 
 import com.deal.utils.enums.Gender;
 import com.deal.utils.enums.MaritalStatus;
-import com.deal.utils.json.Employment;
-import com.deal.utils.json.Passport;
+import com.deal.entity.json.Employment;
+import com.deal.entity.json.Passport;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

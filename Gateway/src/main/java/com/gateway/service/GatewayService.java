@@ -1,14 +1,13 @@
-package com.deal.service;
+package com.gateway.service;
 
-import com.deal.dto.request.FinishRegistrationRequestDto;
-import com.deal.dto.request.LoanStatementRequestDto;
-import com.deal.dto.response.LoanOfferDto;
-import com.deal.entity.Statement;
+import com.gateway.dto.request.FinishRegistrationRequestDto;
+import com.gateway.dto.request.LoanStatementRequestDto;
+import com.gateway.dto.response.LoanOfferDto;
 
 import java.util.List;
 import java.util.UUID;
 
-public interface DealService {
+public interface GatewayService {
     List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto loanStatement);
 
     void selectLoanOffer(LoanOfferDto loanOffer);
@@ -20,8 +19,4 @@ public interface DealService {
     void createSignCodeDocuments(UUID statementId);
 
     void signCodeDocument(UUID statementId, String sesCode);
-
-    Statement getStatementById(UUID statementId);
-
-    List<Statement> getAllStatements();
 }

@@ -1,4 +1,4 @@
-package com.deal.utils.json;
+package com.deal.entity.json;
 
 import com.deal.utils.enums.ChangeType;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
