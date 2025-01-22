@@ -5,6 +5,7 @@ import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.request.ScoringDataDto;
 import com.deal.dto.response.CreditDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.dto.response.StatementDto;
 import com.deal.entity.Client;
 import com.deal.entity.Credit;
 import com.deal.entity.Statement;
@@ -145,14 +146,18 @@ public class DealServiceImpl implements DealService {
     }
 
     @Override
-    public Statement getStatementById(UUID statementId) {
-        return statementRepository.findById(statementId)
+    public StatementDto getStatementDtoById(UUID statementId) {
+        Statement statement = statementRepository.findById(statementId)
                 .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
+        return convertToDTO(statement);
     }
-
+    
     @Override
-    public List<Statement> getAllStatements() {
-        return statementRepository.findAll();
+    public List<StatementDto> getAllStatementsDto() {
+        List<Statement> statements = statementRepository.findAll();
+        return statements.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     private void updateCredit(Statement statement, CreditDto creditDto) {
@@ -165,6 +170,11 @@ public class DealServiceImpl implements DealService {
             statement.setCredit(credit);
             statementRepository.save(statement);
         }
+    }
+
+    public Statement getStatementById(UUID statementId) {
+        return statementRepository.findById(statementId)
+                .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
     }
 
     private void updateClient(Client client, ScoringDataDto scoringDataDto) {
@@ -224,6 +234,20 @@ public class DealServiceImpl implements DealService {
                 Theme.SIGN_DOCUMENTS, statementId);
 
         log.info("Documents for statement ID {} have been signed and credit issued.", statement.getStatementId());
+    }
+
+    public StatementDto convertToDTO(Statement statement) {
+        return new StatementDto(
+                statement.getStatementId(),
+                statement.getClient() != null ? statement.getClient().getClientId() : null,
+                statement.getCredit() != null ? statement.getCredit().getCreditId() : null,
+                statement.getStatus(),
+                statement.getCreationDate(),
+                statement.getAppliedOffer(),
+                statement.getSignDate(),
+                statement.getCode(),
+                statement.getStatusHistory()
+        );
     }
     
 }

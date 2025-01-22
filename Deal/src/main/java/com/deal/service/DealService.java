@@ -3,6 +3,7 @@ package com.deal.service;
 import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.dto.response.StatementDto;
 import com.deal.entity.Statement;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface DealService {
 
     void signCodeDocument(UUID statementId, String sesCode);
 
-    Statement getStatementById(UUID statementId);
+    StatementDto getStatementDtoById(UUID statementId);
 
-    List<Statement> getAllStatements();
+    List<StatementDto> getAllStatementsDto();
 }

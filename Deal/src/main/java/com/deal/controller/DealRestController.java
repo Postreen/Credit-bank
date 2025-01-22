@@ -4,6 +4,7 @@ import com.deal.dto.request.FinishRegistrationRequestDto;
 import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.response.ErrorMessageDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.dto.response.StatementDto;
 import com.deal.entity.Statement;
 import com.deal.service.DealService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -96,19 +97,19 @@ public class DealRestController {
         service.signCodeDocument(statementId, sesCode);
     }
 
-    @GetMapping(value = "/deal/admin/statement/{statementId}")
+    @GetMapping(value = "/admin/statement/{statementId}")
     @Operation(summary = "Get statement by ID")
-    public Statement getAppById(@PathVariable(value = "statementId") UUID statementId) {
-        Statement statement = service.getStatementById(statementId);
+    public StatementDto getAppById(@PathVariable(value = "statementId") UUID statementId) {
+        StatementDto statementDto = service.getStatementDtoById(statementId);
         log.info("Returned statement by id");
-        return statement;
+        return statementDto;
     }
 
-    @GetMapping(value = "/deal/admin/statement")
+    @GetMapping(value = "/admin/statement")
     @Operation(summary = "Get all statements")
-    public List<Statement> getAllApp() {
-        List<Statement> statements = service.getAllStatements();
+    public List<StatementDto> getAllApp() {
+        List<StatementDto> statementsDto = service.getAllStatementsDto();
         log.info("Returned all statement");
-        return statements;
+        return statementsDto;
     }
 }
