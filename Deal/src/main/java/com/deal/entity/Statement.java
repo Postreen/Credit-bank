@@ -3,7 +3,7 @@ package com.deal.entity;
 import com.deal.dto.response.LoanOfferDto;
 import com.deal.utils.enums.ApplicationStatus;
 import com.deal.utils.enums.ChangeType;
-import com.deal.utils.json.StatusHistory;
+import com.deal.entity.json.StatusHistory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;

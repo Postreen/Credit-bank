@@ -5,6 +5,7 @@ import com.deal.dto.request.LoanStatementRequestDto;
 import com.deal.dto.request.ScoringDataDto;
 import com.deal.dto.response.CreditDto;
 import com.deal.dto.response.LoanOfferDto;
+import com.deal.dto.response.StatementDto;
 import com.deal.entity.Client;
 import com.deal.entity.Credit;
 import com.deal.entity.Statement;
@@ -95,7 +96,7 @@ public class DealServiceImpl implements DealService {
     @Override
     public void selectLoanOffer(LoanOfferDto loanOffer) {
         UUID statementUUID = loanOffer.statementId();
-        Statement statement = findStatementById(statementUUID);
+        Statement statement = getStatementById(statementUUID);
         statement.setAppliedOffer(loanOffer);
         statement.setStatus(ApplicationStatus.APPROVED, ChangeType.AUTOMATIC);
         statementRepository.save(statement);
@@ -107,8 +108,8 @@ public class DealServiceImpl implements DealService {
     }
 
     @Override
-    public void calculateCredit(String statementId, FinishRegistrationRequestDto finishRegistration) {
-        Statement statement = findStatementById(UUID.fromString(statementId));
+    public void calculateCredit(UUID statementId, FinishRegistrationRequestDto finishRegistration) {
+        Statement statement = getStatementById(statementId);
 
         if (statement.getAppliedOffer() == null) {
             log.error("No loan offer selected for statement ID {}.", statementId);
@@ -144,9 +145,19 @@ public class DealServiceImpl implements DealService {
                 Theme.CREATED_DOCUMENTS, statement.getStatementId());
     }
 
-    private Statement findStatementById(UUID statementId) {
-        return statementRepository.findById(statementId)
+    @Override
+    public StatementDto getStatementDtoById(UUID statementId) {
+        Statement statement = statementRepository.findById(statementId)
                 .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
+        return convertToDTO(statement);
+    }
+    
+    @Override
+    public List<StatementDto> getAllStatementsDto() {
+        List<Statement> statements = statementRepository.findAll();
+        return statements.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     private void updateCredit(Statement statement, CreditDto creditDto) {
@@ -161,6 +172,11 @@ public class DealServiceImpl implements DealService {
         }
     }
 
+    public Statement getStatementById(UUID statementId) {
+        return statementRepository.findById(statementId)
+                .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
+    }
+
     private void updateClient(Client client, ScoringDataDto scoringDataDto) {
         log.debug("Updating client with ID {} using finish registration data.", client.getClientId());
 
@@ -170,7 +186,7 @@ public class DealServiceImpl implements DealService {
     }
 
     public void prepareDocuments(UUID statementId) {
-        Statement statement = findStatementById(statementId);
+        Statement statement = getStatementById(statementId);
 
         log.debug("Preparing documents for statement ID {}.", statement.getStatementId());
 
@@ -192,7 +208,7 @@ public class DealServiceImpl implements DealService {
     }
 
     public void createSignCodeDocuments(UUID statementId) {
-        Statement statement = findStatementById(statementId);
+        Statement statement = getStatementById(statementId);
         UUID sesCode = UUID.randomUUID();
         statement.setCode(sesCode.toString());
         statementRepository.save(statement);
@@ -204,7 +220,7 @@ public class DealServiceImpl implements DealService {
     }
 
     public void signCodeDocument(UUID statementId, String sesCode) {
-        Statement statement = findStatementById(statementId);
+        Statement statement = getStatementById(statementId);
         if(!sesCode.equals(statement.getCode())) {
             throw new InvalidSesCode("Invalid ses code="+sesCode);
         }
@@ -219,4 +235,19 @@ public class DealServiceImpl implements DealService {
 
         log.info("Documents for statement ID {} have been signed and credit issued.", statement.getStatementId());
     }
+
+    public StatementDto convertToDTO(Statement statement) {
+        return new StatementDto(
+                statement.getStatementId(),
+                statement.getClient() != null ? statement.getClient().getClientId() : null,
+                statement.getCredit() != null ? statement.getCredit().getCreditId() : null,
+                statement.getStatus(),
+                statement.getCreationDate(),
+                statement.getAppliedOffer(),
+                statement.getSignDate(),
+                statement.getCode(),
+                statement.getStatusHistory()
+        );
+    }
+    
 }

@@ -1,4 +1,4 @@
-package com.deal.utils.json;
+package com.deal.entity.json;
 
 import com.deal.utils.enums.EmploymentPosition;
 import com.deal.utils.enums.EmploymentStatus;
