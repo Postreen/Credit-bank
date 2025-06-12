@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
@@ -37,6 +39,9 @@ public class StatementController {
             @ApiResponse(responseCode = "422", description = "The request could not be completed",
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class))})})
     public List<LoanOfferDto> calculateLoanOffers(@RequestBody @Valid LoanStatementRequestDto loanStatement) {
+
+        log.info("Request: POST /statement");
+
         return service.calculateLoanOffers(loanStatement);
     }
 
@@ -47,6 +52,9 @@ public class StatementController {
             @ApiResponse(responseCode = "404", description = "Statement not found",
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class))})})
     public void selectLoanOffer(@RequestBody @Valid LoanOfferDto loanOfferDto) {
+
+        log.info("Request: POST statement/offer");
+
         service.selectLoanOffer(loanOfferDto);
     }
 }

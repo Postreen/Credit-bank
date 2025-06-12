@@ -151,7 +151,7 @@ public class DealServiceImpl implements DealService {
                 .orElseThrow(() -> new StatementNotFoundException("StatementId " + statementId + " not found"));
         return convertToDTO(statement);
     }
-    
+
     @Override
     public List<StatementDto> getAllStatementsDto() {
         List<Statement> statements = statementRepository.findAll();
@@ -221,8 +221,8 @@ public class DealServiceImpl implements DealService {
 
     public void signCodeDocument(UUID statementId, String sesCode) {
         Statement statement = getStatementById(statementId);
-        if(!sesCode.equals(statement.getCode())) {
-            throw new InvalidSesCode("Invalid ses code="+sesCode);
+        if (!sesCode.equals(statement.getCode())) {
+            throw new InvalidSesCode("Invalid ses code=" + sesCode);
         }
         statement.setSignDate(LocalDateTime.now());
         statement.setStatus(ApplicationStatus.DOCUMENT_SIGNED, ChangeType.AUTOMATIC);
@@ -249,5 +249,5 @@ public class DealServiceImpl implements DealService {
                 statement.getStatusHistory()
         );
     }
-    
+
 }

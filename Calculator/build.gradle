@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.3.3'
+	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.6'
 }
 
@@ -17,20 +17,27 @@ repositories {
 	mavenCentral()
 }
 
-dependencies {
+ext {
+	springdocVersion = '2.8.8'
+	logbackVersion = '1.5.18'
+	lombokVersion = '1.18.38'
+	junitPlatformLauncherVersion = '1.13.0'
+}
 
+dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-	implementation 'ch.qos.logback:logback-classic:1.5.7'
-	implementation 'ch.qos.logback:logback-core:1.5.7'
-	implementation 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+	implementation "ch.qos.logback:logback-core:${logbackVersion}"
+
+	compileOnly "org.projectlombok:lombok:${lombokVersion}"
+	annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitPlatformLauncherVersion}"
 }
 
 tasks.named('test') {

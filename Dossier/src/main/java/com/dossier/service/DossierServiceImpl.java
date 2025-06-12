@@ -10,12 +10,10 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,11 +27,11 @@ public class DossierServiceImpl implements DossierService {
     private final JavaMailSender sender;
     private final DocumentGenerator documentGenerator;
 
-    @Value("${client.deal.send}")
+    @Value("${client.gateway.send}")
     private String sendDocumentUrlTemplate;
-    @Value("${client.deal.sign}")
+    @Value("${client.gateway.sign}")
     private String signDocumentUrlTemplate;
-    @Value("${client.deal.code}")
+    @Value("${client.gateway.code}")
     private String codeDocumentUrlTemplate;
 
     private static final String SEND_DOCUMENTS_PATH = "Dossier/src/main/resources/templates/documentSend.html";
@@ -154,9 +152,7 @@ public class DossierServiceImpl implements DossierService {
 
             String actionUrl = String.format(codeDocumentUrlTemplate, statementId);
 
-            return template
-                    .replace("%s", actionUrl)
-                    .replace("SesCode", sesCode.toString());
+            return template.replace("%s", actionUrl).replace("SesCode", sesCode.toString());
         } catch (IOException e) {
             log.error("Error reading or processing HTML template", e);
             throw new RuntimeException("Ошибка при генерации содержимого email", e);

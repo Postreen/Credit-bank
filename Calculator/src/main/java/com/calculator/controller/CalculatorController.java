@@ -42,7 +42,7 @@ public class CalculatorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) })})
     public List<LoanOfferDto> calculatePossibleLoanTerms(@RequestBody @Valid LoanStatementRequestDto loanStatementRequestDto) {
 
-        log.info("Request: POST /offers");
+        log.info("Request: POST calculator/offers");
         log.debug("Request,body={}", loanStatementRequestDto);
 
         List<LoanOfferDto> loanOfferDto = calculatorService.calculateLoan(loanStatementRequestDto);
@@ -64,7 +64,7 @@ public class CalculatorController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class)) })})
     public CreditDto fullCalculateLoanParametersAndScoring(@RequestBody @Valid ScoringDataDto scoringDataDto) {
 
-        log.info("Request: POST /calc");
+        log.info("Request: POST calculator/calc");
         log.debug("Request, body={}", scoringDataDto);
 
         CreditDto creditDto = calculatorService.calculateCredit(scoringDataDto);
