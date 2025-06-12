@@ -41,7 +41,7 @@ public class DealRestClient {
 
         try {
             restClient.post()
-                    .uri("/v1/deal/statement/offer")
+                    .uri("/v1/deal/offer/select")
                     .body(loanOfferDto)
                     .retrieve()
                     .toBodilessEntity();

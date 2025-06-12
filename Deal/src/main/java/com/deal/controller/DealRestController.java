@@ -40,13 +40,9 @@ public class DealRestController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class))})})
     public List<LoanOfferDto> calculateLoanOffers(@RequestBody @Valid LoanStatementRequestDto loanStatement) {
 
-        log.info("Request: POST /statement");
+        log.info("Request: POST deal/statement");
 
-        List<LoanOfferDto> loanOffers = service.calculateLoanOffers(loanStatement);
-
-        log.info("Response: POST /statement");
-
-        return loanOffers;
+        return service.calculateLoanOffers(loanStatement);
     }
 
     @PostMapping("offer/select")
@@ -57,7 +53,7 @@ public class DealRestController {
                     content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ErrorMessageDto.class))})})
     public void selectLoanOffer(@RequestBody LoanOfferDto loanOffer) {
 
-        log.info("Request: POST /offer/select");
+        log.info("Request: POST deal/offer/select");
 
         service.selectLoanOffer(loanOffer);
     }
@@ -73,7 +69,7 @@ public class DealRestController {
     public void calculateCredit(@RequestBody FinishRegistrationRequestDto finishRegistration,
                                 @PathVariable @NotNull UUID statementId) {
 
-        log.info("Request: POST /calculate/{statementId}");
+        log.info("Request: POST deal/calculate/{statementId}");
 
         service.calculateCredit(statementId, finishRegistration);
     }
@@ -81,12 +77,16 @@ public class DealRestController {
     @PostMapping("/document/{statementId}/send")
     @Operation(summary = "Request to send documents")
     public void prepareDocuments(@PathVariable UUID statementId) {
+        log.info("Request: POST deal/document/{statementId}/send");
+
         service.prepareDocuments(statementId);
     }
 
     @PostMapping("/document/{statementId}/sign")
     @Operation(summary = "Request to sign documents")
     public void createSignCodeDocuments(@PathVariable UUID statementId) {
+        log.info("Request: POST deal/document/{statementId}/sign");
+
         service.createSignCodeDocuments(statementId);
     }
 
@@ -94,6 +94,8 @@ public class DealRestController {
     @Operation(summary = "Signing documents")
     public void signCodeDocument(@PathVariable UUID statementId,
                                  @RequestParam String sesCode) {
+        log.info("Request: POST deal/document/{statementId}/code");
+
         service.signCodeDocument(statementId, sesCode);
     }
 
